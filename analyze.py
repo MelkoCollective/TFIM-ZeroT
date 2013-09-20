@@ -1,61 +1,60 @@
 #!/usr/bin/python
-'''
-Python code to analyze the results in 01.data and return:
--Expectation <swap>
--Error in <swap> (std dev of the mean)
--Expectation -ln(<swap>)
--Error in -ln(<swap>) (propogation of the above error)
 
-Useage:
-./analyze.py [filename]
-Analyzes the data file [filename] (01.data if none given) and produces the
-above estimators and errors
+import glob
+import numpy as np
 
-author: Stephen Inglis
-2012-03-06
-'''
+def sortNames(fold_list,num_skip=1):
+    return sorted(fold_list,key=lambda k: int(k[num_skip:]))
 
-from math import log,fabs
-from sys import argv
+def extractData(filelist):
+    y = 0
+    y2 = 0
+    N = 0
+    count = 0
+    for f in filelist:
+        data = np.loadtxt(f)
+        y += np.mean(data)
+        y2 += np.mean(data**2)
+        N += 1
+        count += len(data)
+    y /= N
+    y2 /= N
+    err = (y2 - y**2)/(count**0.5)
+    return y,err
 
-def loadfile(filename):
-	file = open(filename)
-	data = []
-	for lines in file:
-		temp = lines.split()
-		data.append([float(i) for i in temp])
-	return data
+# Assuming max_add = 8, define what counting number refers to complete circles
+# as a function of their radius.
+# Using a crude assumption that radius = max width/2
+circle_map = { 0:0.5,
+1:1.5,
+3:2.5,
+5:3.5,
+8:4.5
+}
 
-def main1():
-	if len(argv) > 1:
-		filename = argv[1]
-	else:
-		filename = '01.data'
-	try:
-		data = loadfile(filename)
-	except IOError:
-		print "File %s not found" % filename
-		return
-	numBin = len(data)
-	numSize = len(data[0])
-	y = [0 for i in range(len(data[0]))]
-	y2 = [0 for i in range(len(data[0]))]
-	err = [0 for i in range(len(data[0]))]
-	f = [0 for i in range(len(data[0]))]
-	fErr = [0 for i in range(len(data[0]))]
-	for i in data:
-		for j in range(len(i)):
-			y[j] += i[j]
-			y2[j] += i[j]*i[j]
-	for i in range(numSize):
-		err[i] = ((numBin*y2[i] - y[i]*y[i])**0.5)/(numBin**1.5)
-		y[i] = y[i]/numBin
-	for i in range(numSize):
-		f[i] = -1.0*log(y[i])
-		fErr[i] = fabs(-1.0/y[i] * err[i])
-	print "#%13s %14s %14s %14s" % ('<Swap>','d<Swap>','-ln(<Swap>)','d[-ln(<Swap>)]')
-	for i in range(numSize):
-		print "%0.12f %0.12f %0.12f %0.12f" % (y[i],err[i],f[i],fErr[i])
+def main():
+    folder_fmt = 'L%03d/r%03d/R%03d'
+    filename = '01.data'
+    L_folders = glob.glob('L*')
+    L_folders = sortNames(L_folders)
+    all_data = []
+    for iL in L_folders:
+        nL = int(iL[1:])
+        r_folders = glob.glob(iL + '/r*')
+        r_folders = sortNames(r_folders,6)
+        y_total = 0
+        err2_total = 0
+        for ir in r_folders:
+            nr = int(ir[6:])
+            samples = glob.glob(ir + '/R*/01.data')
+            y,err = extractData(samples)
+            y_total += -1.*np.log(y)
+            err2_total += (err/y)**2
+            try:
+                radius = circle_map[nr]
+                all_data.append([nL,radius,y_total,err2_total**(0.5)])
+            except KeyError:
+                pass
 
-if __name__ == "__main__":
-	main1()
+if __name__ == '__main__':
+    main()
