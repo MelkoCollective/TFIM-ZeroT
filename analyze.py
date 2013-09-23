@@ -3,6 +3,19 @@
 import glob
 import numpy as np
 
+from matplotlib import rc, rcParams
+rc('font',**{'family':'serif','serif':['Computer Modern'], 'size':24})
+rc('text', usetex=True)
+rc('xtick.major',pad=8)
+rc('ytick.major',pad=8)
+c1,c2,c3,c4 = '#007c7c','#ce5e00','#430a8c','#cebd00'
+rcParams['axes.color_cycle'] = [c1,c2,c3,c4]
+
+from matplotlib import use 
+use('agg')
+
+import matplotlib.pyplot as plt
+
 def sortNames(fold_list,num_skip=1):
     return sorted(fold_list,key=lambda k: int(k[num_skip:]))
 
@@ -55,6 +68,18 @@ def main():
                 all_data.append([nL,radius,y_total,err2_total**(0.5)])
             except KeyError:
                 pass
+    sizes = [i[0] for i in all_data]
+    sizes = set(sizes)
+    for S in sizes:
+        data = [i for i in all_data if i[0] == S]
+        sorted(data,key=lambda x: x[1])
+        data = np.array(data)
+        plt.errorbar(data[:,1],data[:,2],yerr=data[:,3],label='L=%d'%S)
+    plt.xlim(xmin=0)
+    plt.xlabel('Radius')
+    plt.ylabel('$S_2$')
+    plt.legend(loc='upper left',prop={'size':14})
+    plt.savefig('circle.pdf',bbox_inches='tight')
 
 if __name__ == '__main__':
     main()
