@@ -105,7 +105,7 @@ PARAMS::PARAMS(){
         if (alpha > 2) cout<<"S_alpha greater than S_2 NOT TESTED FOR 2D \n";
         if (nX_ != nY_) cout<<"Rectangular lattices not tested \n";
         numSpin = alpha*nX_*nX_;
-        numLattB = 2*numSpin-numSpin; //Open Cylinder BC for 2D lattice
+        numLattB = 2*numSpin-alpha*nX_; //Open Cylinder BC for 2D lattice
 
         //Initialize lattice bond array
         int a,b,d;
@@ -130,6 +130,8 @@ PARAMS::PARAMS(){
             }//i
 
     }//end 2D
+    // Debugging
+    //printBst();
 
 	//--------read in regions A and X
 	vector<int> Atemp;  //vector to be pushed back
