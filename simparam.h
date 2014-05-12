@@ -100,12 +100,43 @@ PARAMS::PARAMS(){
     }//end 2D
     */
 
-    else{//2D OBC
+ //   else{//2D Mixed-boundary cylinder
+
+ //       if (alpha > 2) cout<<"S_alpha greater than S_2 NOT TESTED FOR 2D \n";
+ //       if (nX_ != nY_) cout<<"Rectangular lattices not tested \n";
+ //       numSpin = alpha*nX_*nX_;
+ //       numLattB = 2*numSpin-alpha*nX_; //Open Cylinder BC for 2D lattice
+
+ //       //Initialize lattice bond array
+ //       int a,b,d;
+ //       index2 temp;
+ //       for (int rep=0; rep<alpha; rep++)
+ //           for (int i=0; i<numSpin/alpha; i++){  
+ //               //horizontal bond
+ //               a = rep*numSpin/alpha + i;
+ //               b = a+1;
+ //               if ( b%nX_ == 0) b -= nX_;
+ //               temp.set(a,b);
+ //               Bst.push_back(temp);
+ //               //vertical bond
+ //               a = rep*numSpin/alpha + i;
+ //               d = a+nX_;
+ //               // This prevents the vertical bonds that attach around the lattice from being formed
+ //               // But allows all other vertical bonds
+ //               if (d < (rep*numSpin/alpha + nX_*nX_)){
+ //                   temp.set(a,d);
+ //                   Bst.push_back(temp);
+ //               }
+ //           }//i
+
+ //   }//end 2D Mixed-boundeary cylinder
+
+    else{//2D OBC rectangle (for NLCE)
 
         if (alpha > 2) cout<<"S_alpha greater than S_2 NOT TESTED FOR 2D \n";
-        if (nX_ != nY_) cout<<"Rectangular lattices not tested \n";
-        numSpin = alpha*nX_*nX_;
-        numLattB = 2*numSpin-alpha*nX_; //Open Cylinder BC for 2D lattice
+        //if (nX_ != nY_) cout<<"Rectangular lattices not tested \n";
+        numSpin = alpha*nX_*nY_;
+        numLattB = 2*numSpin-alpha*nX_- alpha*nY_; //Open BC for 2D lattice
 
         //Initialize lattice bond array
         int a,b,d;
@@ -115,9 +146,10 @@ PARAMS::PARAMS(){
                 //horizontal bond
                 a = rep*numSpin/alpha + i;
                 b = a+1;
-                if ( b%nX_ == 0) b -= nX_;
-                temp.set(a,b);
-                Bst.push_back(temp);
+				if ( b%nX_ != 0) { //this should prevent the horizontal bonds over PBCs
+					temp.set(a,b);
+					Bst.push_back(temp);
+				}
                 //vertical bond
                 a = rep*numSpin/alpha + i;
                 d = a+nX_;
@@ -129,7 +161,7 @@ PARAMS::PARAMS(){
                 }
             }//i
 
-    }//end 2D
+    }//end 2D OBC
     // Debugging
     //printBst();
 
