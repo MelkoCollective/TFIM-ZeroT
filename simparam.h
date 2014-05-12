@@ -155,7 +155,7 @@ PARAMS::PARAMS(){
                 d = a+nX_;
                 // This prevents the vertical bonds that attach around the lattice from being formed
                 // But allows all other vertical bonds
-                if (d < (rep*numSpin/alpha + nX_*nX_)){
+                if (d < (rep*numSpin/alpha + nX_*nY_)){
                     temp.set(a,d);
                     Bst.push_back(temp);
                 }
